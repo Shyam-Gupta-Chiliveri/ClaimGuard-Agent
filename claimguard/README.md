@@ -1,4 +1,4 @@
-# ClaimGuard
+# ClaimGuard Agent
 
 **App:** https://claimguard.138.2.179.154.sslip.io  
 **Workflows:** https://n8n.138.2.179.154.sslip.io

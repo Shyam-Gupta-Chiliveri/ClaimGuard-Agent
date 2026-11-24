@@ -36,7 +36,7 @@ docker compose version
 ## 4. Get the code and configure
 
 ```bash
-git clone https://github.com/Shyam-Gupta-Chiliveri/claimguard.git ~/claimguard
+git clone https://github.com/Shyam-Gupta-Chiliveri/ClaimGuard-Agent.git ~/claimguard
 cd ~/claimguard/claimguard
 cp .env.example .env
 nano .env
