@@ -5,6 +5,19 @@
 
 German and European motor-insurance risk, fraud triage, and the four jobs that keep the models honest. The app is public. The workflow site is the n8n instance that runs those jobs. After sign-in, the workflows page shows how the published statistics, the tables, the two models, the site and the four jobs connect.
 
+## Skills and tools
+
+| area | what is used |
+|---|---|
+| Data analysis | Python, pandas, NumPy, SciPy, SQLite, pyshp, Shapely. Public tables from GDV, Destatis, KBA, Eurostat, EIOPA and BKA |
+| Machine learning | scikit-learn: HistGradientBoosting, Ridge, a median baseline, IsolationForest, GroupKFold by Bundesland, permutation importance, partial dependence |
+| MLOps | Data contracts, a quality gate, a versioned model registry, PSI drift, weekly retrain, GitHub Actions, pytest, Ruff |
+| Retrieval | BM25 over the methodology notes, pypdf for the source documents, citations in the agent |
+| Agent | FastAPI tool API, a planner that calls the tools, an offline fallback when no LLM key is set |
+| Interface | HTML, CSS and JavaScript. No framework. ECharts, self-hosted fonts, German and English, light and dark |
+| Automation | n8n: claim intake, app events, weekly drift, daily red-queue digest |
+| Delivery | Docker, Docker Compose, Caddy, Oracle Cloud |
+
 ![Overview](claimguard/docs/screenshots/overview.png)
 
 ## What it answers
