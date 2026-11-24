@@ -1,0 +1,22 @@
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+
+# Secrets
+.env
+claimguard/.env
+
+# Rebuilt locally and in CI
+claimguard/.venv/
+claimguard/.pytest_cache/
+claimguard/.ruff_cache/
+claimguard/models/
+claimguard/reports/drift.json
+
+# Larger than GitHub's 100 MB file limit, or official source documents.
+# They stay next to this folder on disk and are not rewritten.
+motor_insurance_risk_raw.csv
+Dataset/
+Dataset.zip
+PDFs/

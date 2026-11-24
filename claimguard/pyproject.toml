@@ -1,0 +1,19 @@
+[project]
+name = "claimguard"
+version = "1.0.0"
+description = "German motor-insurance risk, Europe comparison, claim-fraud triage, ML/MLOps, RAG and an agentic analyst."
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 140
+target-version = "py312"
+extend-exclude = [".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501", "B008"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning"]

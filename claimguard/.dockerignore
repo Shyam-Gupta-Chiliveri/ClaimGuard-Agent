@@ -1,0 +1,15 @@
+.venv
+.git
+.github
+**/__pycache__
+.pytest_cache
+.ruff_cache
+models
+reports
+docs
+tests
+scripts
+n8n
+deploy
+.env
+*.md

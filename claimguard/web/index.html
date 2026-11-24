@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ClaimGuard · Motor insurance risk and fraud analytics</title>
+  <meta name="description" content="Motor insurance risk analytics for Germany and Europe: GDV Regionalklassen, accidents, vehicle stock, fraud triage, machine learning and an analyst agent. Built on official statistics." />
+  <meta name="color-scheme" content="light dark" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232450c9'/><path d='M16 6.5 8.5 9.3v6.2c0 5 3.2 8.9 7.5 10.2 4.3-1.3 7.5-5.2 7.5-10.2V9.3z' fill='none' stroke='white' stroke-width='2' stroke-linejoin='round'/><path d='m12.6 16 2.4 2.4 4.4-4.9' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+  <script>
+    (function () {
+      var t = "light";
+      try {
+        var q = new URLSearchParams(location.search).get("theme");
+        var s = localStorage.getItem("cg-theme");
+        t = q || s || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      } catch (e) {}
+      document.documentElement.dataset.theme = t === "dark" ? "dark" : "light";
+      var lang = "en";
+      try {
+        var ql = new URLSearchParams(location.search).get("lang");
+        var sl = localStorage.getItem("cg-lang");
+        lang = ql === "de" || ql === "en" ? ql : sl === "de" || sl === "en" ? sl : (navigator.language || "").toLowerCase().indexOf("de") === 0 ? "de" : "en";
+      } catch (e2) {}
+      document.documentElement.lang = lang;
+    })();
+  </script>
+  <link rel="preload" href="/static/vendor/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <a class="skip" href="#main" data-i18n="Skip to content">Skip to content</a>
+
+  <div class="app" id="app">
+    <!-- ================================ SIDEBAR ================================ -->
+    <aside class="side" id="side" data-i18n-label="Main navigation" aria-label="Main navigation">
+      <a class="brand" href="#overview">
+        <span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 5.7v5.8c0 4.7 3 8.4 7 9.6 4-1.2 7-4.9 7-9.6V5.7z"/><path d="m8.8 12 2.3 2.3 4.2-4.6"/></svg></span>
+        <span><b>ClaimGuard</b><small data-i18n="Motor risk and fraud analytics">Motor risk and fraud analytics</small></span>
+      </a>
+      <nav class="nav">
+        <div class="nav-g" data-i18n="Analysis">Analysis</div>
+        <a href="#overview" data-nav="overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="7" height="9" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="5" rx="1.5"/><rect x="13.5" y="11.5" width="7" height="9" rx="1.5"/><rect x="3.5" y="15.5" width="7" height="5" rx="1.5"/></svg><span data-i18n="Overview">Overview</span></a>
+        <a href="#germany" data-nav="germany"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 21s-6.5-5.9-6.5-11A6.5 6.5 0 0 1 18.5 10c0 5.1-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg><span data-i18n="Germany">Germany</span></a>
+        <a href="#europe" data-nav="europe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5a13 13 0 0 1 0 17M12 3.5a13 13 0 0 0 0 17"/></svg><span data-i18n="Europe">Europe</span></a>
+        <div class="nav-g" data-i18n="Fraud and claims">Fraud and claims</div>
+        <a href="#fraud" data-nav="fraud"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg><span data-i18n="Fraud landscape">Fraud landscape</span></a>
+        <a href="#triage" data-nav="triage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-7.5 4 15 3-7.5h4"/></svg><span data-i18n="Live triage">Live triage</span><span class="badge" id="nav-red" hidden></span></a>
+        <div class="nav-g" data-i18n="Models">Models</div>
+        <a href="#ml" data-nav="ml"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3.5h5M10.5 3.5v5.6L5 18.6a1.4 1.4 0 0 0 1.2 2h11.6a1.4 1.4 0 0 0 1.2-2l-5.5-9.5V3.5"/><path d="M7.5 15h9"/></svg><span data-i18n="ML lab and MLOps">ML lab and MLOps</span></a>
+        <a href="#agent" data-nav="agent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 20.5 12z"/><path d="M9 11h6M9 14h3.5"/></svg><span data-i18n="Analyst agent">Analyst agent</span></a>
+        <div class="nav-g" data-i18n="Reference">Reference</div>
+        <a href="#system" data-nav="system"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="2.2"/><circle cx="5" cy="7" r="1.6"/><circle cx="19" cy="7" r="1.6"/><circle cx="6" cy="17.5" r="1.6"/><circle cx="18" cy="17.5" r="1.6"/><path d="M6.4 8.2 10.2 11M17.6 8.2 13.8 11M7.3 16.4 10.4 13.4M16.7 16.4 13.6 13.4"/></svg><span data-i18n="How it connects">How it connects</span></a>
+        <a href="#methods" data-nav="methods"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h10.5a3 3 0 0 1 3 3v12H8a3 3 0 0 1-3-3z"/><path d="M5 16.5a3 3 0 0 1 3-3h10.5M9 8.5h5.5"/></svg><span data-i18n="Data and methods">Data and methods</span></a>
+      </nav>
+      <div class="side-foot" data-i18n-label="System status" aria-label="System status">
+        <div class="sys"><span data-i18n="Model">Model</span><b class="mono" id="sb-model">…</b></div>
+        <div class="sys"><span data-i18n="Fleet drift">Fleet drift</span><b id="sb-drift">…</b></div>
+        <div class="sys"><span data-i18n="Agent">Agent</span><b id="sb-agent">…</b></div>
+      </div>
+    </aside>
+    <div class="scrim" id="scrim"></div>
+
+    <div class="content">
+      <!-- ================================ TOP BAR ================================ -->
+      <header class="top">
+        <button class="icon-btn menu-btn" id="menu-btn" data-i18n-label="Open navigation" aria-label="Open navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+        <div class="crumb"><span>ClaimGuard</span><span aria-hidden="true">/</span><b id="crumb">Overview</b></div>
+        <button class="search-btn" id="palette-btn" data-i18n-label="Search districts, pages and claims" aria-label="Search districts, pages and claims">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+          <span data-i18n="Search districts, pages, claims">Search districts, pages, claims</span><kbd id="palette-kbd">Ctrl K</kbd>
+        </button>
+        <a class="top-status" href="#ml" id="top-drift" data-i18n-title="Fleet drift status, see ML lab" title="Fleet drift status, see ML lab" hidden></a>
+        <div class="lang" id="lang" role="group" data-i18n-label="Language" aria-label="Language">
+          <button type="button" class="lang-b" data-lang="de" aria-pressed="false">DE</button>
+          <button type="button" class="lang-b" data-lang="en" aria-pressed="true">EN</button>
+        </div>
+        <button class="icon-btn" id="theme-btn" data-i18n-label="Switch between light and dark theme" data-i18n-title="Switch theme" aria-label="Switch between light and dark theme" title="Switch theme">
+          <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+          <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg>
+        </button>
+      </header>
+
+      <main id="main" tabindex="-1">
+        <!-- ================================ OVERVIEW ================================ -->
+        <section class="view" id="view-overview" data-title="Overview">
+          <div class="page-h">
+            <div>
+              <p class="kicker" data-i18n="Executive summary">Executive summary</p>
+              <h1 data-i18n="Motor insurance risk in Germany">Motor insurance risk in Germany</h1>
+              <p class="lede" data-i18n="Where driving is most expensive to insure, how Germany compares with Europe, and which claims deserve a second look. Built on official statistics for 400 districts, 16 Bundesländer and more than 30 European countries.">Where driving is most expensive to insure, how Germany compares with Europe, and which claims deserve a second look. Built on official statistics for 400 districts, 16 Bundesländer and more than 30 European countries.</p>
+            </div>
+          </div>
+          <div class="kpis" id="kpis"></div>
+          <div class="grid">
+            <article class="card c-7">
+              <header class="card-h">
+                <div><h3 data-i18n="Risk by district">Risk by district</h3><p id="ov-map-sub">&nbsp;</p></div>
+              </header>
+              <div class="seg" id="ov-metrics" role="group" aria-label="Map measure"></div>
+              <div class="map-wrap" data-map="ov-map"><div id="ov-map" class="chart h-map"></div></div>
+              <footer class="card-f" data-i18n="Select a district to open its profile. Sources: GDV, Destatis, KBA. Boundaries: BKG VG250.">Select a district to open its profile. Sources: GDV, Destatis, KBA. Boundaries: BKG VG250.</footer>
+            </article>
+            <div class="c-5 stack">
+              <article class="card">
+                <header class="card-h"><div><h3 data-i18n="Districts by Haftpflicht class">Districts by Haftpflicht class</h3><p id="ov-hist-sub">&nbsp;</p></div></header>
+                <div id="ov-hist" class="chart h-sm"></div>
+                <div class="linklist" id="ov-top12"></div>
+                <footer class="card-f" data-i18n="Source: GDV Regionalklassen 2027. Districts for which GDV publishes more than one class are left out.">Source: GDV Regionalklassen 2027. Districts for which GDV publishes more than one class are left out.</footer>
+              </article>
+              <article class="card">
+                <header class="card-h"><div><h3 data-i18n="Ask the analyst agent">Ask the analyst agent</h3><p data-i18n="Answers come from the data, the models and the source documents, with citations.">Answers come from the data, the models and the source documents, with citations.</p></div></header>
+                <form class="askbar" id="ov-ask">
+                  <input type="text" data-i18n-label="Question for the analyst agent" data-i18n-placeholder="Why is Gelsenkirchen in class 12?" aria-label="Question for the analyst agent" placeholder="Why is Gelsenkirchen in class 12?" />
+                  <button class="btn primary" type="submit" data-i18n="Ask">Ask</button>
+                </form>
+                <div class="linklist" id="ov-ask-examples"></div>
+              </article>
+            </div>
+          </div>
+          <div class="section-h">
+            <div><h2 data-i18n="Key findings">Key findings</h2><p data-i18n="Every figure below is computed from the data by the pipeline on each build.">Every figure below is computed from the data by the pipeline on each build.</p></div>
+            <div class="seg" id="ins-filter" role="group" aria-label="Filter findings"></div>
+          </div>
+          <div class="findings" id="insights"></div>
+        </section>
+
+        <!-- ================================ GERMANY ================================ -->
+        <section class="view" id="view-germany" data-title="Germany">
+          <div class="page-h">
+            <div>
+              <p class="kicker" data-i18n="Regionalklassen · Unfallatlas · KBA">Regionalklassen · Unfallatlas · KBA</p>
+              <h1 data-i18n="German risk map">German risk map</h1>
+              <p class="lede" data-i18n="Choose a measure, then select a district to see its classes, its accident profile and what drives the model's estimate of its Haftpflicht class.">Choose a measure, then select a district to see its classes, its accident profile and what drives the model's estimate of its Haftpflicht class.</p>
+            </div>
+          </div>
+          <div class="grid">
+            <article class="card c-7">
+              <header class="card-h"><div><h3 id="de-map-title">Risk by district</h3><p id="de-map-sub">&nbsp;</p></div></header>
+              <div class="seg" id="de-metrics" role="group" aria-label="Map measure"></div>
+              <div class="map-wrap" data-map="de-map"><div id="de-map" class="chart h-map"></div></div>
+              <footer class="card-f" data-i18n="Sources: GDV Regionalklassen 2027, Destatis Unfallatlas 2020 to 2025 and population 2024, KBA vehicle stock 1 Jan 2025. Boundaries: BKG VG250.">Sources: GDV Regionalklassen 2027, Destatis Unfallatlas 2020 to 2025 and population 2024, KBA vehicle stock 1 Jan 2025. Boundaries: BKG VG250.</footer>
+            </article>
+            <article class="card c-5 drawer">
+              <div class="drawer-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+                <input type="search" id="de-search" list="districts" data-i18n-label="Find a district" data-i18n-placeholder="Find a district: München, Köln, 05513" aria-label="Find a district" placeholder="Find a district: München, Köln, 05513" />
+                <datalist id="districts"></datalist>
+              </div>
+              <div id="drawer"><div class="empty" data-i18n="Select a district on the map.">Select a district on the map.</div></div>
+            </article>
+          </div>
+          <div class="grid">
+            <article class="card c-6">
+              <header class="card-h"><div><h3 data-i18n="Density explains the class better than accident counts">Density explains the class better than accident counts</h3><p data-i18n="Each dot is a district. Size shows population. Click a dot to open the district.">Each dot is a district. Size shows population. Click a dot to open the district.</p></div></header>
+              <div id="de-scatter" class="chart h-lg"></div>
+              <footer class="card-f" data-i18n="Sources: Destatis population 2024, GDV Regionalklassen 2027.">Sources: Destatis population 2024, GDV Regionalklassen 2027.</footer>
+            </article>
+            <article class="card c-6">
+              <header class="card-h"><div><h3 data-i18n="Classes by Bundesland">Classes by Bundesland</h3><p data-i18n="District classes weighted by passenger cars. Scales differ: Haftpflicht 1 to 12, Vollkasko 1 to 9, Teilkasko 1 to 16.">District classes weighted by passenger cars. Scales differ: Haftpflicht 1 to 12, Vollkasko 1 to 9, Teilkasko 1 to 16.</p></div></header>
+              <div id="de-states" class="chart h-lg"></div>
+              <footer class="card-f" data-i18n="Sources: GDV Regionalklassen 2027, KBA vehicle stock.">Sources: GDV Regionalklassen 2027, KBA vehicle stock.</footer>
+            </article>
+            <article class="card c-6">
+              <header class="card-h"><div><h3 data-i18n="When injury accidents happen">When injury accidents happen</h3><p data-i18n="Share of accidents by hour of day, urban and rural districts, 2020 to 2025.">Share of accidents by hour of day, urban and rural districts, 2020 to 2025.</p></div></header>
+              <div id="de-hours" class="chart h-sm"></div>
+              <footer class="card-f" data-i18n="Source: Destatis Unfallatlas (accidents with personal injury).">Source: Destatis Unfallatlas (accidents with personal injury).</footer>
+            </article>
+            <article class="card c-6">
+              <header class="card-h"><div><h3 data-i18n="Injury accidents and severity by year">Injury accidents and severity by year</h3><p data-i18n="Lighter bars: not every Bundesland reported to the Unfallatlas in that year.">Lighter bars: not every Bundesland reported to the Unfallatlas in that year.</p></div></header>
+              <div id="de-trend" class="chart h-sm"></div>
+              <footer class="card-f" data-i18n="Source: Destatis Unfallatlas.">Source: Destatis Unfallatlas.</footer>
+            </article>
+          </div>
+          <article class="card">
+            <header class="card-h">
+              <div><h3 data-i18n="District explorer">District explorer</h3><p id="tb-count">&nbsp;</p></div>
+              <div class="card-tools wrap">
+                <input type="search" id="tb-q" data-i18n-placeholder="Filter by name or code" data-i18n-label="Filter districts" placeholder="Filter by name or code" aria-label="Filter districts" />
+                <select id="tb-state" data-i18n-label="Bundesland" aria-label="Bundesland"><option value="" data-i18n="All Bundesländer">All Bundesländer</option></select>
+                <select id="tb-type" data-i18n-label="District type" aria-label="District type"><option value="" data-i18n="Urban and rural">Urban and rural</option><option value="urban" data-i18n="Urban">Urban</option><option value="rural" data-i18n="Rural">Rural</option></select>
+                <button class="btn" id="tb-export" type="button" data-i18n="Export CSV">Export CSV</button>
+              </div>
+            </header>
+            <div class="table-wrap tall" id="de-table"></div>
+            <footer class="card-f" data-i18n="Model: Haftpflicht class predicted from public data on Bundesländer the model did not train on. Gap: GDV class minus model. Click a column to sort and a row to open the district.">Model: Haftpflicht class predicted from public data on Bundesländer the model did not train on. Gap: GDV class minus model. Click a column to sort and a row to open the district.</footer>
+          </article>
+        </section>
+
+        <!-- ================================ EUROPE ================================ -->
+        <section class="view" id="view-europe" data-title="Europe">
+          <div class="page-h">
+            <div>
+              <p class="kicker" data-i18n="Eurostat · EIOPA">Eurostat · EIOPA</p>
+              <h1 data-i18n="Germany in Europe">Germany in Europe</h1>
+              <p class="lede" data-i18n="Road safety, car ownership and the non-life insurance market. Germany is highlighted in every chart.">Road safety, car ownership and the non-life insurance market. Germany is highlighted in every chart.</p>
+            </div>
+            <div class="page-tools">
+              <div class="seg" id="eu-metrics" role="group" aria-label="Measure"></div>
+              <select id="eu-year" data-i18n-label="Year" aria-label="Year"></select>
+            </div>
+          </div>
+          <div class="grid">
+            <article class="card c-6">
+              <header class="card-h"><div><h3 id="eu-rank-title">Ranking</h3><p id="eu-rank-sub">&nbsp;</p></div></header>
+              <div id="eu-rank" class="chart h-xl"></div>
+            </article>
+            <div class="c-6 stack">
+              <article class="card">
+                <header class="card-h"><div><h3 data-i18n="More cars do not mean more road deaths">More cars do not mean more road deaths</h3><p id="eu-bubble-sub">Each bubble is a country. Size shows population.</p></div></header>
+                <div id="eu-bubble" class="chart h-md"></div>
+                <footer class="card-f" data-i18n="Sources: Eurostat road_eqs_carhab and sdg_11_40.">Sources: Eurostat road_eqs_carhab and sdg_11_40.</footer>
+              </article>
+              <article class="card">
+                <header class="card-h"><div><h3 id="eu-series-title">Over time</h3><p data-i18n="Select countries to compare with Germany.">Select countries to compare with Germany.</p></div></header>
+                <div class="chips" id="eu-countries" role="group" aria-label="Countries"></div>
+                <div id="eu-series" class="chart h-sm"></div>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================ FRAUD ================================ -->
+        <section class="view" id="view-fraud" data-title="Fraud landscape">
+          <div class="page-h">
+            <div>
+              <p class="kicker" data-i18n="GDV · BKA · Insurance Europe · Larmtjänst · CBV · ALFA · ABI">GDV · BKA · Insurance Europe · Larmtjänst · CBV · ALFA · ABI</p>
+              <h1 data-i18n="The insurance fraud landscape">The insurance fraud landscape</h1>
+              <p class="lede" data-i18n="Every country measures fraud differently: suspicion estimates, refused claims, proven cases, police records. Read the figures as different lenses on the same problem. They are not a ranking.">Every country measures fraud differently: suspicion estimates, refused claims, proven cases, police records. Read the figures as different lenses on the same problem. They are not a ranking.</p>
+            </div>
+          </div>
+          <div class="lenses" id="fraud-cards"></div>
+          <div class="grid">
+            <article class="card c-7">
+              <header class="card-h"><div><h3 data-i18n="Police-recorded insurance fraud in Germany has fallen since 2004">Police-recorded insurance fraud in Germany has fallen since 2004</h3><p data-i18n="Recorded cases, cleared cases and suspects per year.">Recorded cases, cleared cases and suspects per year.</p></div></header>
+              <div id="fr-police" class="chart h-md"></div>
+              <footer class="card-f" data-i18n="Source: BKA Polizeiliche Kriminalstatistik, key 517400 (fraud against insurers and insurance abuse).">Source: BKA Polizeiliche Kriminalstatistik, key 517400 (fraud against insurers and insurance abuse).</footer>
+            </article>
+            <article class="card c-5">
+              <header class="card-h"><div><h3 data-i18n="The reporting gap">The reporting gap</h3><p data-i18n="What insurers suspect and what reaches the police are very different numbers. The units differ, so the steps are not drawn to scale.">What insurers suspect and what reaches the police are very different numbers. The units differ, so the steps are not drawn to scale.</p></div></header>
+              <div class="steps" id="fr-steps"></div>
+              <h4 class="mini-h" data-i18n="What problematic claims look like">What problematic claims look like</h4>
+              <div id="fr-patterns"></div>
+              <footer class="card-f" data-i18n="Sources: GDV, BKA PKS. Patterns: GDV special review, May 2017, approximate shares of problematic claims.">Sources: GDV, BKA PKS. Patterns: GDV special review, May 2017, approximate shares of problematic claims.</footer>
+            </article>
+            <article class="card c-6">
+              <header class="card-h"><div><h3 data-i18n="Sweden: claims refused after a fraud investigation">Sweden: claims refused after a fraud investigation</h3><p data-i18n="Million SEK per year by line of business.">Million SEK per year by line of business.</p></div></header>
+              <div id="fr-sweden" class="chart h-sm"></div>
+              <footer class="card-f" data-i18n="Source: Larmtjänst.">Source: Larmtjänst.</footer>
+            </article>
+            <article class="card c-6">
+              <header class="card-h"><div><h3 data-i18n="Red-flag rulebook">Red-flag rulebook</h3><p data-i18n="Ten published indicators. Points add up to a score: green 0 to 14, amber 15 to 34, red 35 and above.">Ten published indicators. Points add up to a score: green 0 to 14, amber 15 to 34, red 35 and above.</p></div></header>
+              <div class="table-wrap" id="fr-rules"></div>
+            </article>
+          </div>
+        </section>
+
+        <!-- ================================ TRIAGE ================================ -->
+        <section class="view" id="view-triage" data-title="Live triage">
+          <div class="page-h">
+            <div>
+              <p class="kicker" data-i18n="Rules engine · Isolation Forest · n8n">Rules engine · Isolation Forest · n8n</p>
+              <h1 data-i18n="Live claim triage">Live claim triage</h1>
+              <p class="lede" data-i18n="Claims are scored as they arrive. Red goes to investigators, amber to a claims handler, green is paid. An anomaly model sends unusual green claims for a second look.">Claims are scored as they arrive. Red goes to investigators, amber to a claims handler, green is paid. An anomaly model sends unusual green claims for a second look.</p>
+            </div>
+            <div class="page-tools">
+              <select id="tr-speed" data-i18n-label="Stream speed" aria-label="Stream speed"><option value="1" data-i18n="1× speed">1× speed</option><option value="3" data-i18n="3× speed">3× speed</option><option value="8" data-i18n="8× speed">8× speed</option></select>
+              <button class="btn primary" id="tr-toggle" type="button" data-i18n="Start stream">Start stream</button>
+            </div>
+          </div>
+          <div class="notice">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 7.8v.2"/></svg>
+            <span data-i18n-html="&lt;b&gt;Simulated claims.&lt;/b&gt; District facts are real. Every claim, person and policy is generated (seed 2026) to demonstrate the triage system, because claim-level data is confidential."><b>Simulated claims.</b> District facts are real. Every claim, person and policy is generated (seed 2026) to demonstrate the triage system, because claim-level data is confidential.</span>
+          </div>
+          <div class="stats" id="tr-counters"></div>
+          <div class="grid">
+            <article class="card c-7">
+              <header class="card-h"><div><h3 data-i18n="Where claims come from">Where claims come from</h3><p data-i18n="Each dot is a scored claim at its district. Red claims pulse.">Each dot is a scored claim at its district. Red claims pulse.</p></div></header>
+              <div id="tr-map" class="chart h-lg"></div>
+            </article>
+            <article class="card c-5">
+              <header class="card-h"><div><h3 data-i18n="Incoming queue">Incoming queue</h3><p data-i18n="Select a claim for its rule breakdown and investigator brief.">Select a claim for its rule breakdown and investigator brief.</p></div></header>
+              <div class="feed" id="tr-feed"><div class="empty" data-i18n-html="Press &lt;b&gt;Start stream&lt;/b&gt; to replay the inbox in real time.">Press <b>Start stream</b> to replay the inbox in real time.</div></div>
+            </article>
+          </div>
+          <div class="grid">
+            <article class="card c-6">
+              <header class="card-h"><div><h3 data-i18n="Score a claim">Score a claim</h3><p data-i18n="Change the facts and see which rules fire.">Change the facts and see which rules fire.</p></div></header>
+              <form class="form" id="tr-form">
+                <label><span data-i18n="Days after policy start">Days after policy start</span><input type="number" name="days_after_policy_start" value="200" min="0" /></label>
+                <label><span data-i18n="Days before policy expiry">Days before policy expiry</span><input type="number" name="days_before_policy_expiry" value="165" /></label>
+                <label><span data-i18n="Days to report">Days to report</span><input type="number" name="days_to_report" value="2" min="0" /></label>
+                <label><span data-i18n="Prior claims, 12 months">Prior claims, 12 months</span><input type="number" name="prior_claims_12_months" value="0" min="0" /></label>
+                <label><span data-i18n="Repair estimate, €">Repair estimate, €</span><input type="number" name="repair_estimate_eur" value="2500" min="0" /></label>
+                <label><span data-i18n="Claimed amount, €">Claimed amount, €</span><input type="number" name="claimed_amount_eur" value="2500" min="0" /></label>
+                <label><span data-i18n="Vehicle age, years">Vehicle age, years</span><input type="number" name="vehicle_age_years" value="6" min="0" /></label>
+                <div class="toggles" role="group" data-i18n-label="Claim facts" aria-label="Claim facts">
+                  <button type="button" class="chip toggle" data-k="description_matches_damage" data-on="no" aria-pressed="false" data-i18n="Story does not match damage">Story does not match damage</button>
+                  <button type="button" class="chip toggle" data-k="amount_inflated" data-on="yes" aria-pressed="false" data-i18n="Amount inflated">Amount inflated</button>
+                  <button type="button" class="chip toggle" data-k="document_manipulated" data-on="yes" aria-pressed="false" data-i18n="Document manipulated">Document manipulated</button>
+                  <button type="button" class="chip toggle" data-k="police_report" data-on="no" aria-pressed="false" data-i18n="No police report">No police report</button>
+                  <button type="button" class="chip toggle" data-k="injury" data-on="yes" aria-pressed="false" data-i18n="Injury">Injury</button>
+                  <button type="button" class="chip toggle" data-k="witness" data-on="no" aria-pressed="false" data-i18n="No witness">No witness</button>
+                </div>
+                <div class="form-actions"><button class="btn primary" type="submit" data-i18n="Score claim">Score claim</button></div>
+              </form>
+            </article>
+            <article class="card c-6" id="tr-result"><div class="empty" data-i18n="The score, the rules that fired and the anomaly check appear here.">The score, the rules that fired and the anomaly check appear here.</div></article>
+          </div>
+        </section>
+
+        <!-- ================================ ML ================================ -->
+        <section class="view" id="view-ml" data-title="ML lab and MLOps">
+          <div class="page-h">
+            <div>
+              <p class="kicker" data-i18n="Spatial validation · Explainability · Registry · Drift">Spatial validation · Explainability · Registry · Drift</p>
+              <h1 data-i18n="ML lab and MLOps">ML lab and MLOps</h1>
+              <p class="lede" data-i18n="Can public data explain the GDV Regionalklassen? Models are validated on Bundesländer they have never seen, pass a quality gate before promotion, are versioned in a registry and are monitored for drift.">Can public data explain the GDV Regionalklassen? Models are validated on Bundesländer they have never seen, pass a quality gate before promotion, are versioned in a registry and are monitored for drift.</p>
+            </div>
+            <div class="page-tools"><div class="seg" id="ml-targets" role="group" aria-label="Target"></div></div>
+          </div>
+          <div class="pipeline" id="ml-pipeline"></div>
+          <div class="kpis k4" id="ml-kpis"></div>
+          <div class="grid">
+            <article class="card c-6">
+              <header class="card-h"><div><h3 data-i18n="A random split flatters the model">A random split flatters the model</h3><p data-i18n="Mean absolute error in classes, lower is better. The difference between the two bars is spatial leakage.">Mean absolute error in classes, lower is better. The difference between the two bars is spatial leakage.</p></div></header>
+              <div id="ml-cv" class="chart h-sm"></div>
+            </article>
+            <article class="card c-6">
+              <header class="card-h"><div><h3 data-i18n="Predicted against actual class">Predicted against actual class</h3><p data-i18n="Predictions for held-out Bundesländer. Above the line: the GDV class is higher than public data suggests.">Predictions for held-out Bundesländer. Above the line: the GDV class is higher than public data suggests.</p></div></header>
+              <div id="ml-scatter" class="chart h-sm"></div>
+            </article>
+            <article class="card c-6">
+              <header class="card-h"><div><h3 data-i18n="What drives the class">What drives the class</h3><p data-i18n="Permutation importance on held-out Bundesländer: increase in error when a feature is shuffled.">Permutation importance on held-out Bundesländer: increase in error when a feature is shuffled.</p></div></header>
+              <div id="ml-imp" class="chart h-md"></div>
+            </article>
+            <article class="card c-6">
+              <header class="card-h"><div><h3 data-i18n="Where the model and GDV disagree">Where the model and GDV disagree</h3><p data-i18n="GDV class minus predicted class.">GDV class minus predicted class.</p></div></header>
+              <div class="map-wrap" data-map="ml-resid"><div id="ml-resid" class="chart h-md"></div></div>
+            </article>
+            <article class="card c-12">
+              <header class="card-h"><div><h3 data-i18n="Partial dependence">Partial dependence</h3><p data-i18n="Average predicted class as one feature changes and the others stay as observed.">Average predicted class as one feature changes and the others stay as observed.</p></div></header>
+              <div id="ml-pdp" class="chart h-sm"></div>
+            </article>
+            <article class="card c-6">
+              <header class="card-h"><div><h3 data-i18n="Fleet drift since training">Fleet drift since training</h3><p id="ml-drift-sub">Population Stability Index by feature.</p></div></header>
+              <div id="ml-drift" class="chart h-sm"></div>
+            </article>
+            <article class="card c-6">
+              <header class="card-h"><div><h3 data-i18n="Model registry">Model registry</h3><p data-i18n="Versions are hashes of data and configuration. Only models that pass the gate are promoted.">Versions are hashes of data and configuration. Only models that pass the gate are promoted.</p></div></header>
+              <div class="table-wrap" id="ml-registry"></div>
+              <h4 class="mini-h" data-i18n="Quality gate for this target">Quality gate for this target</h4>
+              <div id="ml-gate"></div>
+            </article>
+          </div>
+        </section>
+
+        <!-- ================================ AGENT ================================ -->
+        <section class="view" id="view-agent" data-title="Analyst agent">
+          <div class="page-h">
+            <div>
+              <p class="kicker" data-i18n="Tools · Retrieval · Citations">Tools · Retrieval · Citations</p>
+              <h1 data-i18n="Analyst agent">Analyst agent</h1>
+              <p class="lede" data-i18n="The agent plans, calls tools over the data, the models and the source documents, and answers with citations. Every step is shown in the trace.">The agent plans, calls tools over the data, the models and the source documents, and answers with citations. Every step is shown in the trace.</p>
+            </div>
+            <div class="page-tools"><span class="pill" id="agent-mode">…</span></div>
+          </div>
+          <div class="agent">
+            <article class="card chat">
+              <div class="messages" id="messages" aria-live="polite"></div>
+              <div class="suggest" id="suggest"></div>
+              <form class="composer" id="composer">
+                <textarea rows="1" data-i18n-label="Your question" data-i18n-placeholder="Ask about a district, a country, fraud, a claim such as SIM-0373, or the models" aria-label="Your question" placeholder="Ask about a district, a country, fraud, a claim such as SIM-0373, or the models"></textarea>
+                <button class="btn primary" type="submit" data-i18n="Send">Send</button>
+              </form>
+            </article>
+            <article class="card trace">
+              <header class="card-h"><div><h3 data-i18n="Trace">Trace</h3><p data-i18n="Plan, tool calls and observations for the last question.">Plan, tool calls and observations for the last question.</p></div></header>
+              <div id="trace"><div class="empty" data-i18n="Ask a question to see how the agent works.">Ask a question to see how the agent works.</div></div>
+            </article>
+          </div>
+        </section>
+
+        <!-- ================================ SYSTEM ================================ -->
+        <section class="view" id="view-system" data-title="How it connects">
+          <div class="page-h">
+            <div>
+              <p class="kicker" data-i18n="Architecture">Architecture</p>
+              <h1 data-i18n="How the work connects">How the work connects</h1>
+              <p class="lede" data-i18n="A spatial view of this project: published statistics, the tables built from them, the two models, the site, and the four n8n jobs. Drag to turn it. Scroll to zoom. Click a point to read its role.">A spatial view of this project: published statistics, the tables built from them, the two models, the site, and the four n8n jobs. Drag to turn it. Scroll to zoom. Click a point to read its role.</p>
+            </div>
+          </div>
+          <article class="card system-card">
+            <div class="system-stage" id="system-stage">
+              <canvas id="system-canvas" aria-hidden="true"></canvas>
+              <div class="system-detail" id="system-detail"></div>
+            </div>
+            <div class="system-legend" id="system-legend"></div>
+          </article>
+          <p class="system-path" data-i18n="Official statistics feed three tables. Those tables train a Regionalklasse model and a claim-anomaly check. The API serves the dashboards and the agent, and the n8n jobs call that same API on a schedule or when a claim arrives.">Official statistics feed three tables. Those tables train a Regionalklasse model and a claim-anomaly check. The API serves the dashboards and the agent, and the n8n jobs call that same API on a schedule or when a claim arrives.</p>
+        </section>
+
+        <!-- ================================ METHODS ================================ -->
+        <section class="view" id="view-methods" data-title="Data and methods">
+          <div class="page-h">
+            <div>
+              <p class="kicker" data-i18n="Reference">Reference</p>
+              <h1 data-i18n="Data and methods">Data and methods</h1>
+              <p class="lede" data-i18n="What is real, what is simulated, how the numbers are produced and where they stop being reliable.">What is real, what is simulated, how the numbers are produced and where they stop being reliable.</p>
+            </div>
+          </div>
+          <div class="grid">
+            <article class="card c-8">
+              <header class="card-h"><div><h3 data-i18n="Sources">Sources</h3><p data-i18n="All figures in the dashboards come from these public sources.">All figures in the dashboards come from these public sources.</p></div></header>
+              <div class="table-wrap full">
+                <table>
+                  <thead><tr><th data-i18n="Publisher">Publisher</th><th data-i18n="Dataset">Dataset</th><th data-i18n="Used for">Used for</th></tr></thead>
+                  <tbody>
+                    <tr><td data-i18n="GDV">GDV</td><td data-i18n="Regionalklassen 2026 and 2027">Regionalklassen 2026 and 2027</td><td data-i18n="Risk classes per district for Haftpflicht, Vollkasko and Teilkasko. The model target.">Risk classes per district for Haftpflicht, Vollkasko and Teilkasko. The model target.</td></tr>
+                    <tr><td data-i18n="Destatis">Destatis</td><td data-i18n="Unfallatlas, accidents with personal injury">Unfallatlas, accidents with personal injury</td><td data-i18n="Accident counts, severity, time of day and road users involved. District features use 2020 to 2025.">Accident counts, severity, time of day and road users involved. District features use 2020 to 2025.</td></tr>
+                    <tr><td data-i18n="Destatis">Destatis</td><td data-i18n="Population by district, 2024">Population by district, 2024</td><td data-i18n="Population, density, urban and rural type.">Population, density, urban and rural type.</td></tr>
+                    <tr><td data-i18n="KBA">KBA</td><td data-i18n="Vehicle stock on 1 January 2025 and 2026">Vehicle stock on 1 January 2025 and 2026</td><td data-i18n="Cars per person, fuel mix, emission classes. 2025 trains the model, 2026 is the drift snapshot.">Cars per person, fuel mix, emission classes. 2025 trains the model, 2026 is the drift snapshot.</td></tr>
+                    <tr><td data-i18n="Eurostat">Eurostat</td><td data-i18n="sdg_11_40, road_eqs_carhab">sdg_11_40, road_eqs_carhab</td><td data-i18n="Road deaths per 100,000 people and passenger cars per 1,000 people.">Road deaths per 100,000 people and passenger cars per 1,000 people.</td></tr>
+                    <tr><td data-i18n="EIOPA">EIOPA</td><td data-i18n="Insurance statistics, solo annual">Insurance statistics, solo annual</td><td data-i18n="Non-life premiums written and claims ratio. All non-life business, not motor alone.">Non-life premiums written and claims ratio. All non-life business, not motor alone.</td></tr>
+                    <tr><td data-i18n="BKA">BKA</td><td data-i18n="Polizeiliche Kriminalstatistik, key 517400">Polizeiliche Kriminalstatistik, key 517400</td><td data-i18n="Police-recorded insurance fraud, cleared cases and suspects since 1993.">Police-recorded insurance fraud, cleared cases and suspects since 1993.</td></tr>
+                    <tr><td data-i18n="GDV, Insurance Europe, Larmtjänst, CBV, ALFA, ABI">GDV, Insurance Europe, Larmtjänst, CBV, ALFA, ABI</td><td data-i18n="Published fraud statistics">Published fraud statistics</td><td data-i18n="Fraud estimates and detected fraud for Germany, Europe, Sweden, the Netherlands, France and the United Kingdom.">Fraud estimates and detected fraud for Germany, Europe, Sweden, the Netherlands, France and the United Kingdom.</td></tr>
+                    <tr><td data-i18n="IVASS, GDV, BKA">IVASS, GDV, BKA</td><td data-i18n="Published fraud indicators">Published fraud indicators</td><td data-i18n="Basis of the ten red-flag rules.">Basis of the ten red-flag rules.</td></tr>
+                    <tr><td data-i18n="BKG">BKG</td><td data-i18n="VG250 administrative boundaries">VG250 administrative boundaries</td><td data-i18n="District map.">District map.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </article>
+            <article class="card c-4">
+              <header class="card-h"><div><h3 data-i18n="Real and simulated">Real and simulated</h3></div></header>
+              <div class="prose">
+                <p><span class="pill green" data-i18n="Real">Real</span> <span data-i18n="Every district, country and fraud figure comes from a published source or is calculated from one.">Every district, country and fraud figure comes from a published source or is calculated from one.</span></p>
+                <p><span class="pill amber" data-i18n="Simulated">Simulated</span> <span data-i18n="The 800 claims in the triage inbox and the live stream. Claim-level data is confidential, so claims are generated with a fixed seed and labelled as simulated wherever they appear.">The 800 claims in the triage inbox and the live stream. Claim-level data is confidential, so claims are generated with a fixed seed and labelled as simulated wherever they appear.</span></p>
+                <p data-i18n="The triage numbers therefore describe how the system behaves. They are not fraud detection rates.">The triage numbers therefore describe how the system behaves. They are not fraud detection rates.</p>
+              </div>
+            </article>
+            <article class="card c-6">
+              <header class="card-h"><div><h3 data-i18n="How the numbers are produced">How the numbers are produced</h3></div></header>
+              <div class="prose">
+                <h4 data-i18n="Regionalklasse model">Regionalklasse model</h4>
+                <p data-i18n="Predicts the GDV class of a district from public accident, fleet and population features. A median baseline, a ridge regression and gradient boosting are compared. Validation groups districts by Bundesland, so every prediction is for a state the model has not seen. A random split is reported only to show how much it overstates accuracy.">Predicts the GDV class of a district from public accident, fleet and population features. A median baseline, a ridge regression and gradient boosting are compared. Validation groups districts by Bundesland, so every prediction is for a state the model has not seen. A random split is reported only to show how much it overstates accuracy.</p>
+                <h4 data-i18n="District explanation">District explanation</h4>
+                <p data-i18n="Each feature of a district is replaced by the German median in turn. The change in the predicted class is that feature's contribution.">Each feature of a district is replaced by the German median in turn. The change in the predicted class is that feature's contribution.</p>
+                <h4 data-i18n="Claim triage">Claim triage</h4>
+                <p data-i18n="Ten published red-flag indicators add points. The total sets the band: green 0 to 14, amber 15 to 34, red 35 and above. An Isolation Forest scores how unusual a claim is. A green claim it flags is routed for a second look. It is a second opinion, not a fraud classifier, because no real fraud labels exist.">Ten published red-flag indicators add points. The total sets the band: green 0 to 14, amber 15 to 34, red 35 and above. An Isolation Forest scores how unusual a claim is. A green claim it flags is routed for a second look. It is a second opinion, not a fraud classifier, because no real fraud labels exist.</p>
+                <h4 data-i18n="Drift">Drift</h4>
+                <p data-i18n="The Population Stability Index compares each fleet feature in the KBA 2026 data with the 2025 data the model was trained on. Above 0.10 is watched, above 0.25 calls for a retrain.">The Population Stability Index compares each fleet feature in the KBA 2026 data with the 2025 data the model was trained on. Above 0.10 is watched, above 0.25 calls for a retrain.</p>
+                <h4 data-i18n="Agent">Agent</h4>
+                <p data-i18n="The agent chooses among twelve tools over the data marts, the models and a keyword index of the source documents. Without a language model it uses a deterministic planner that calls the same tools.">The agent chooses among twelve tools over the data marts, the models and a keyword index of the source documents. Without a language model it uses a deterministic planner that calls the same tools.</p>
+              </div>
+            </article>
+            <article class="card c-6">
+              <header class="card-h"><div><h3 data-i18n="Limits">Limits</h3></div></header>
+              <div class="prose">
+                <ul>
+                  <li data-i18n="The Unfallatlas records accidents with personal injury only. Property-damage claims, which make up most motor liability claims, are not in public data.">The Unfallatlas records accidents with personal injury only. Property-damage claims, which make up most motor liability claims, are not in public data.</li>
+                  <li data-i18n="GDV sets classes from insurers' claims experience. Public data explains part of that, so the model is a tool for explanation and for finding gaps, not a replacement for the GDV classes.">GDV sets classes from insurers' claims experience. Public data explains part of that, so the model is a tool for explanation and for finding gaps, not a replacement for the GDV classes.</li>
+                  <li data-i18n="Last year's class predicts this year's class far better than any public-data model. That benchmark is shown in the ML lab.">Last year's class predicts this year's class far better than any public-data model. That benchmark is shown in the ML lab.</li>
+                  <li data-i18n="KBA reports Trier and Trier-Saarburg as one figure, so both districts have no fleet features.">KBA reports Trier and Trier-Saarburg as one figure, so both districts have no fleet features.</li>
+                  <li data-i18n="National fraud figures use different definitions and are shown side by side, never ranked.">National fraud figures use different definitions and are shown side by side, never ranked.</li>
+                  <li data-i18n="EIOPA claims ratios cover all non-life business, not motor alone.">EIOPA claims ratios cover all non-life business, not motor alone.</li>
+                </ul>
+              </div>
+            </article>
+            <article class="card c-12">
+              <header class="card-h"><div><h3 data-i18n="Glossary of German terms">Glossary of German terms</h3></div></header>
+              <dl class="glossary">
+                <div><dt>Regionalklasse</dt><dd data-i18n="Regional risk class. GDV assigns one to every registration district each year from the claims experience of the vehicles registered there. A higher class means a higher regional component of the premium. The classes are a recommendation, not binding on insurers.">Regional risk class. GDV assigns one to every registration district each year from the claims experience of the vehicles registered there. A higher class means a higher regional component of the premium. The classes are a recommendation, not binding on insurers.</dd></div>
+                <div><dt>Kfz-Haftpflicht</dt><dd data-i18n="Compulsory motor third-party liability insurance. Classes 1 to 12.">Compulsory motor third-party liability insurance. Classes 1 to 12.</dd></div>
+                <div><dt>Vollkasko</dt><dd data-i18n="Comprehensive cover, including damage to the insured's own car in an at-fault accident. Classes 1 to 9.">Comprehensive cover, including damage to the insured's own car in an at-fault accident. Classes 1 to 9.</dd></div>
+                <div><dt>Teilkasko</dt><dd data-i18n="Partial cover: theft, glass, storm, hail and collisions with animals. Classes 1 to 16.">Partial cover: theft, glass, storm, hail and collisions with animals. Classes 1 to 16.</dd></div>
+                <div><dt>Bundesland</dt><dd data-i18n="One of the 16 federal states.">One of the 16 federal states.</dd></div>
+                <div><dt>Kreis, kreisfreie Stadt</dt><dd data-i18n="District and independent city, the 400 units used here. AGS is the official five-digit district key.">District and independent city, the 400 units used here. AGS is the official five-digit district key.</dd></div>
+                <div><dt>GDV</dt><dd data-i18n="Gesamtverband der Deutschen Versicherungswirtschaft, the German insurance association.">Gesamtverband der Deutschen Versicherungswirtschaft, the German insurance association.</dd></div>
+                <div><dt>KBA</dt><dd data-i18n="Kraftfahrt-Bundesamt, the federal motor transport authority.">Kraftfahrt-Bundesamt, the federal motor transport authority.</dd></div>
+                <div><dt>Destatis</dt><dd data-i18n="Statistisches Bundesamt, the federal statistical office.">Statistisches Bundesamt, the federal statistical office.</dd></div>
+                <div><dt>BKA, PKS</dt><dd data-i18n="Bundeskriminalamt and its Polizeiliche Kriminalstatistik, the police crime statistics.">Bundeskriminalamt and its Polizeiliche Kriminalstatistik, the police crime statistics.</dd></div>
+              </dl>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <footer class="foot">
+        <span data-i18n="Official statistics from Destatis, KBA, GDV, Eurostat, EIOPA and BKA. Claims in triage are simulated.">Official statistics from Destatis, KBA, GDV, Eurostat, EIOPA and BKA. Claims in triage are simulated.</span>
+        <span data-i18n="No third-party requests: fonts and charts are served from this site.">No third-party requests: fonts and charts are served from this site.</span>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ================================ COMMAND PALETTE ================================ -->
+  <div class="palette" id="palette" hidden>
+    <div class="palette-box" role="dialog" aria-modal="true" data-i18n-label="Search" aria-label="Search">
+      <div class="palette-in">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+        <input type="text" id="palette-input" data-i18n-placeholder="Search a district, a page or a claim id, or type a question" data-i18n-label="Search" placeholder="Search a district, a page or a claim id, or type a question" autocomplete="off" spellcheck="false" aria-label="Search" />
+        <kbd>Esc</kbd>
+      </div>
+      <div class="palette-list" id="palette-list" role="listbox"></div>
+      <div class="palette-foot"><span><kbd>↑</kbd><kbd>↓</kbd> <span data-i18n="to move">to move</span></span><span><kbd>Enter</kbd> <span data-i18n="to open">to open</span></span></div>
+    </div>
+  </div>
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <script src="/static/vendor/echarts.min.js"></script>
+  <script src="/static/i18n.js"></script>
+  <script src="/static/system.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

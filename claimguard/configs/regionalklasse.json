@@ -1,0 +1,53 @@
+{
+  "model_name": "regionalklasse",
+  "description": "Predict the GDV Regionalklasse 2027 of a German district from public accident, fleet and population data.",
+  "targets": {
+    "liability_class_2027": {"label": "Kfz-Haftpflicht", "min": 1, "max": 12},
+    "comprehensive_class_2027": {"label": "Vollkasko", "min": 1, "max": 9},
+    "partial_cover_class_2027": {"label": "Teilkasko", "min": 1, "max": 16}
+  },
+  "features": [
+    "log_density",
+    "is_urban",
+    "area_km2",
+    "cars_per_1000_people",
+    "accidents_per_1000_cars",
+    "accidents_per_10k_people",
+    "accident_trend_per_year",
+    "share_killed_or_serious",
+    "share_darkness",
+    "share_wet_road",
+    "share_winter_road",
+    "share_weekend",
+    "share_night_22_05",
+    "share_rush_hour",
+    "share_rear_end",
+    "share_left_road",
+    "share_turning_crossing",
+    "share_with_bicycle",
+    "share_with_pedestrian",
+    "share_with_motorcycle",
+    "share_with_goods_vehicle",
+    "share_diesel",
+    "share_bev",
+    "share_hybrid",
+    "share_old_fleet_euro4_or_older",
+    "share_engine_2000cc_plus",
+    "car_growth_2018_2025",
+    "motorcycles_per_1000_people",
+    "trucks_per_1000_people",
+    "share_male"
+  ],
+  "group_column": "bundesland",
+  "seed": 2026,
+  "random_folds": 5,
+  "models": {
+    "ridge": {"alpha": 3.0},
+    "gradient_boosting": {"max_depth": 3, "learning_rate": 0.05, "max_iter": 400, "min_samples_leaf": 12, "l2_regularization": 1.0}
+  },
+  "gate": {
+    "_note": "Regression guard set just below the first accepted model (spatial MAE 1.50, within ±1 58%). A new model must not be worse, and must beat the median baseline by 15%.",
+    "liability_class_2027": {"max_mae": 1.6, "min_within_one": 0.55, "must_beat_baseline_by": 0.15}
+  },
+  "promotion_tolerance_mae": 0.02
+}

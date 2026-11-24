@@ -1,0 +1,120 @@
+{
+  "name": "ClaimGuard · 03 Weekly model & drift report → retrain",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "weeks", "triggerAtDay": [1], "triggerAtHour": 7 }] }
+      },
+      "id": "c3f2e8f4-0001-4e3c-9c03-driftreport1",
+      "name": "Every Monday 07:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 300]
+    },
+    {
+      "parameters": { "url": "={{ $env.CLAIMGUARD_API || 'http://app:8000' }}/api/ml/drift", "options": {} },
+      "id": "c3f2e8f4-0002-4e3c-9c03-driftreport2",
+      "name": "Get drift",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.CLAIMGUARD_API || 'http://app:8000' }}/api/agent/ask",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ question: 'How good is the model and is there drift?' }) }}",
+        "options": { "timeout": 60000 }
+      },
+      "id": "c3f2e8f4-0003-4e3c-9c03-driftreport3",
+      "name": "Agent summary",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const drift = $('Get drift').first().json;\nconst top = (drift.features || []).slice(0, 5).map(f => `• ${f.feature}: PSI ${f.psi} (${f.status})`).join('\\n');\nconst answer = $input.first().json.answer || '';\nreturn [{ json: { status: drift.status, model: drift.model_version, text: `📊 ClaimGuard weekly model report — drift status: ${drift.status.toUpperCase()} (model ${drift.model_version})\\n${drift.reference} vs ${drift.current}\\n${top}\\n\\n${answer}` } }];"
+      },
+      "id": "c3f2e8f4-0004-4e3c-9c03-driftreport4",
+      "name": "Format report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [720, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ALERT_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.text }) }}",
+        "options": {}
+      },
+      "id": "c3f2e8f4-0005-4e3c-9c03-driftreport5",
+      "name": "Post report",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [960, 300],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [
+            {
+              "id": "cond-retrain",
+              "leftValue": "={{ $('Format report').item.json.status }}",
+              "rightValue": "retrain",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c3f2e8f4-0006-4e3c-9c03-driftreport6",
+      "name": "Retrain needed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1200, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.github.com/repos/{{ $env.GITHUB_REPO }}/actions/workflows/ci.yml/dispatches",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $env.GITHUB_TOKEN }}" },
+            { "name": "Accept", "value": "application/vnd.github+json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{ \"ref\": \"main\", \"inputs\": { \"reason\": \"n8n drift monitor: retrain\" } }",
+        "options": {}
+      },
+      "id": "c3f2e8f4-0007-4e3c-9c03-driftreport7",
+      "name": "Trigger CI retrain (GitHub Actions)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1440, 200],
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Every Monday 07:00": { "main": [[{ "node": "Get drift", "type": "main", "index": 0 }]] },
+    "Get drift": { "main": [[{ "node": "Agent summary", "type": "main", "index": 0 }]] },
+    "Agent summary": { "main": [[{ "node": "Format report", "type": "main", "index": 0 }]] },
+    "Format report": { "main": [[{ "node": "Post report", "type": "main", "index": 0 }]] },
+    "Post report": { "main": [[{ "node": "Retrain needed?", "type": "main", "index": 0 }]] },
+    "Retrain needed?": { "main": [[{ "node": "Trigger CI retrain (GitHub Actions)", "type": "main", "index": 0 }], []] }
+  },
+  "settings": { "executionOrder": "v1", "timezone": "Europe/Berlin" },
+  "pinData": {},
+  "tags": []
+}

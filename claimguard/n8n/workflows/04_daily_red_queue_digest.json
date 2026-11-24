@@ -1,0 +1,55 @@
+{
+  "name": "ClaimGuard · 04 Daily red-queue digest",
+  "nodes": [
+    {
+      "parameters": { "rule": { "interval": [{ "field": "days", "triggerAtHour": 8 }] } },
+      "id": "d4a3f9a5-0001-4f4d-ad04-digest000001",
+      "name": "Every day 08:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 300]
+    },
+    {
+      "parameters": { "url": "={{ $env.CLAIMGUARD_API || 'http://app:8000' }}/api/claims?band=red&limit=10", "options": {} },
+      "id": "d4a3f9a5-0002-4f4d-ad04-digest000002",
+      "name": "Red queue",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const q = $input.first().json;\nconst lines = q.rows.map(r => `• ${r.claim_id} · ${r.geo_name} · €${r.claimed_amount_eur.toLocaleString('de-DE')} · score ${r.score} — ${r.reason_summary}`);\nreturn [{ json: { text: `🗂️ ClaimGuard investigator queue (${q.label}) — red ${q.counts.red ?? 0}, amber ${q.counts.amber ?? 0}, green ${q.counts.green ?? 0}\\n` + lines.join('\\n') } }];"
+      },
+      "id": "d4a3f9a5-0003-4f4d-ad04-digest000003",
+      "name": "Format digest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ALERT_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.text }) }}",
+        "options": {}
+      },
+      "id": "d4a3f9a5-0004-4f4d-ad04-digest000004",
+      "name": "Send digest",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [720, 300],
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Every day 08:00": { "main": [[{ "node": "Red queue", "type": "main", "index": 0 }]] },
+    "Red queue": { "main": [[{ "node": "Format digest", "type": "main", "index": 0 }]] },
+    "Format digest": { "main": [[{ "node": "Send digest", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1", "timezone": "Europe/Berlin" },
+  "pinData": {},
+  "tags": []
+}

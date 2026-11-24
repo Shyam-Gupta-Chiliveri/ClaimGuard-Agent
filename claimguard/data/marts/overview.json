@@ -1,0 +1,51 @@
+{
+  "population_2024": 83577140,
+  "districts": 400,
+  "passenger_cars_2026": 49222294,
+  "accidents_with_injury_latest": 273007,
+  "accidents_year": 2025,
+  "police_insurance_fraud_cases": 2129,
+  "police_year": 2024,
+  "gdv_suspicious_share_pct": 10.0,
+  "gdv_fraud_loss_bn_eur": 6.0,
+  "germany_road_deaths_per_100k_2024": 3.32,
+  "germany_nonlife_claims_ratio_2024": 0.6106,
+  "highest_liability_districts": [
+    {
+      "geo_code": "11000",
+      "geo_name": "Berlin, Stadt",
+      "liability_class_2027": 12.0
+    },
+    {
+      "geo_code": "05513",
+      "geo_name": "Gelsenkirchen, Stadt",
+      "liability_class_2027": 12.0
+    },
+    {
+      "geo_code": "05113",
+      "geo_name": "Essen, Stadt",
+      "liability_class_2027": 12.0
+    },
+    {
+      "geo_code": "06611",
+      "geo_name": "Kassel, documenta-Stadt",
+      "liability_class_2027": 12.0
+    },
+    {
+      "geo_code": "06413",
+      "geo_name": "Offenbach am Main, Stadt",
+      "liability_class_2027": 12.0
+    },
+    {
+      "geo_code": "06414",
+      "geo_name": "Wiesbaden, Landeshauptstadt",
+      "liability_class_2027": 12.0
+    }
+  ],
+  "simulated_claims": 800,
+  "simulated_triage": {
+    "green": 720,
+    "amber": 56,
+    "red": 24
+  }
+}

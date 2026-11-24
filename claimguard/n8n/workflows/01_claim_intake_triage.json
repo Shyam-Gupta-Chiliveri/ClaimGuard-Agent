@@ -1,0 +1,128 @@
+{
+  "name": "ClaimGuard · 01 Claim intake → triage → investigator alert",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "claim-intake",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a1f0c6d2-0001-4c1a-9a01-claimintake01",
+      "name": "New claim (webhook)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "webhookId": "claimguard-claim-intake"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.CLAIMGUARD_API || 'http://app:8000' }}/api/claims/score",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "options": { "timeout": 10000 }
+      },
+      "id": "a1f0c6d2-0002-4c1a-9a01-claimintake02",
+      "name": "Score with ClaimGuard",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { claim_id: $json.claim.claim_id, band: $json.result.band, score: $json.result.score, route: $json.result.route, fired: $json.result.fired.map(f => f.rule_id) } }}",
+        "options": {}
+      },
+      "id": "a1f0c6d2-0003-4c1a-9a01-claimintake03",
+      "name": "Reply to sender",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [
+            {
+              "id": "cond-red",
+              "leftValue": "={{ $('Score with ClaimGuard').item.json.result.band }}",
+              "rightValue": "red",
+              "operator": { "type": "string", "operation": "equals" }
+            },
+            {
+              "id": "cond-second-look",
+              "leftValue": "={{ $('Score with ClaimGuard').item.json.result.route }}",
+              "rightValue": "second look",
+              "operator": { "type": "string", "operation": "startsWith" }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "a1f0c6d2-0004-4c1a-9a01-claimintake04",
+      "name": "Needs a human?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [720, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.CLAIMGUARD_API || 'http://app:8000' }}/api/agent/brief",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ claim: $('Score with ClaimGuard').item.json.claim, result: $('Score with ClaimGuard').item.json.result }) }}",
+        "options": { "timeout": 60000 }
+      },
+      "id": "a1f0c6d2-0005-4c1a-9a01-claimintake05",
+      "name": "Write investigator brief (agent)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [960, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ALERT_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: `🚨 ClaimGuard ${$json.band.toUpperCase()} (score ${$json.score}) — ${$json.route}\\n${$json.brief}` }) }}",
+        "options": { "timeout": 10000 }
+      },
+      "id": "a1f0c6d2-0006-4c1a-9a01-claimintake06",
+      "name": "Alert investigators (Slack/Teams/Discord webhook)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1200, 200],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {},
+      "id": "a1f0c6d2-0007-4c1a-9a01-claimintake07",
+      "name": "Normal queue",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [960, 420]
+    }
+  ],
+  "connections": {
+    "New claim (webhook)": { "main": [[{ "node": "Score with ClaimGuard", "type": "main", "index": 0 }]] },
+    "Score with ClaimGuard": { "main": [[{ "node": "Reply to sender", "type": "main", "index": 0 }]] },
+    "Reply to sender": { "main": [[{ "node": "Needs a human?", "type": "main", "index": 0 }]] },
+    "Needs a human?": {
+      "main": [
+        [{ "node": "Write investigator brief (agent)", "type": "main", "index": 0 }],
+        [{ "node": "Normal queue", "type": "main", "index": 0 }]
+      ]
+    },
+    "Write investigator brief (agent)": { "main": [[{ "node": "Alert investigators (Slack/Teams/Discord webhook)", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1", "timezone": "Europe/Berlin" },
+  "pinData": {},
+  "tags": []
+}

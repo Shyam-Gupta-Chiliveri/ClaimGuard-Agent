@@ -1,0 +1,93 @@
+[
+  {
+    "key": "density",
+    "title": "Density beats accidents",
+    "value": "ρ = 0.74",
+    "text": "Population density ranks districts' Haftpflicht class far better (Spearman 0.74) than injury accidents per car do (0.27). Median class: urban 8, rural 4. GDV classes are driven by claim cost, and most claims are property-damage-only accidents the Unfallatlas never records.",
+    "tab": "germany"
+  },
+  {
+    "key": "severity",
+    "title": "Rural crashes are rarer but harsher",
+    "value": "21% vs 13%",
+    "text": "In rural districts 21% of injury accidents kill or seriously injure someone, against 13% in cities, while accidents per 1,000 cars are 4.5 vs 6.4. Frequency and severity point in opposite directions — the core idea of a frequency/severity tariff model.",
+    "tab": "germany"
+  },
+  {
+    "key": "states",
+    "title": "State spread",
+    "value": "12.0 → 1.3",
+    "text": "Car-weighted Haftpflicht class is highest in Berlin (12.0) and lowest in Mecklenburg-Vorpommern (1.3).",
+    "tab": "germany"
+  },
+  {
+    "key": "teilkasko",
+    "title": "Teilkasko has a different map",
+    "value": "ρ(area) = 0.52",
+    "text": "Teilkasko covers theft, glass, storm, hail and collisions with game. Its class rises with district area (Spearman 0.52), consistent with game collisions in large rural districts. Highest median class: Berlin (12) and Mecklenburg-Vorpommern (12) — a city and a rural state at once, so theft and countryside risks both matter; lowest: Nordrhein-Westfalen (5).",
+    "tab": "germany"
+  },
+  {
+    "key": "trend",
+    "title": "Injury accidents rebound after 2020",
+    "value": "+14.7%",
+    "text": "Injury accidents went from 237,994 (2020, pandemic year) to 273,007 (2025). Years before 2020 are left out because not every state reported.",
+    "tab": "germany"
+  },
+  {
+    "key": "bev",
+    "title": "EV adoption is uneven",
+    "value": "1.0% – 9.1%",
+    "text": "Battery-electric share of the car stock (KBA 1 Jan 2025) ranges from 1.0% to 9.1% (Wolfsburg, Stadt). The 2026 fleet already drifts: share hybrid PSI 1.33 → drift status 'retrain'.",
+    "tab": "ml"
+  },
+  {
+    "key": "europe_roads",
+    "title": "Germany's roads in Europe",
+    "value": "3.32 per 100k",
+    "text": "Germany had 3.32 road deaths per 100,000 people in 2024, rank 23 of 33 countries (1 = most dangerous).",
+    "tab": "europe"
+  },
+  {
+    "key": "europe_claims",
+    "title": "Non-life claims ratio",
+    "value": "61%",
+    "text": "German insurers paid out 61% of non-life premiums earned as claims in 2024 (EIOPA Solo Annual); the median of 30 countries is 59%. This is all non-life business, not motor alone.",
+    "tab": "europe"
+  },
+  {
+    "key": "police",
+    "title": "The fraud reporting gap",
+    "value": "2,129 cases",
+    "text": "Police recorded 2,129 insurance-fraud cases in 2024 (PKS 517400), 82% below the 2004 peak of 11,743. Insurers (GDV) still treat about 10% of claims as suspicious — fraud is handled inside claims departments, rarely by the police.",
+    "tab": "fraud"
+  },
+  {
+    "key": "sweden",
+    "title": "Sweden: refused motor claims",
+    "value": "+80%",
+    "text": "Swedish insurers refused 289 MSEK of motor claims after investigation in 2024, up from 161 MSEK in 2020 (Larmtjänst).",
+    "tab": "fraud"
+  },
+  {
+    "key": "spatial_cv",
+    "title": "Spatial leakage is real",
+    "value": "MAE 1.08 → 1.50",
+    "text": "A random split makes the model look 39% better than it is. Validated on unseen Bundesländer, the gradient_boosting model misses the Haftpflicht class by 1.50 classes on average (median baseline 2.33), 58% within ±1.",
+    "tab": "ml"
+  },
+  {
+    "key": "residuals",
+    "title": "Where public data under-explains the class",
+    "value": "+2.0 classes",
+    "text": "GDV classes sit above the model most in Bayern (mean residual +2.0) and below it in Mecklenburg-Vorpommern (-2.0). Largest gaps: Kempten (Allgäu) (+5.7), Oberallgäu (+5.2), Miesbach (+5.2), Weilheim-Schongau (+4.8). Hypotheses to test with claims data: tourist and transit traffic, repair-cost levels, theft, fraud.",
+    "tab": "ml"
+  },
+  {
+    "key": "triage",
+    "title": "Triage funnel (SIMULATED)",
+    "value": "24 red / 800",
+    "text": "Of 800 simulated claims, 56 go to a handler and 24 to investigators. The anomaly model sends 26 green claims for a second look that no rule caught.",
+    "tab": "triage"
+  }
+]

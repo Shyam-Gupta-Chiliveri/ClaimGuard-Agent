@@ -1,0 +1,8 @@
+-r requirements.txt
+# rebuilding marts / map / RAG index from the raw sources
+pypdf==7.1.1
+pyshp==3.1.9
+shapely==2.2.0
+# quality
+pytest==9.2.0
+ruff==0.17.6

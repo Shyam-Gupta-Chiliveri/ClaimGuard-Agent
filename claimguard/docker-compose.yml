@@ -1,0 +1,61 @@
+name: claimguard
+
+services:
+  app:
+    build: .
+    image: claimguard:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      N8N_WEBHOOK_URL: ${N8N_WEBHOOK_URL:-http://n8n:5678/webhook/claimguard-events}
+    expose: ["8000"]
+    ports: ["127.0.0.1:8000:8000"]
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:${N8N_VERSION:-latest}
+    user: "0:0"
+    entrypoint: ["/bin/sh", "/claimguard/patch-editor.sh"]
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      GENERIC_TIMEZONE: Europe/Berlin
+      TZ: Europe/Berlin
+      N8N_HOST: ${N8N_DOMAIN:-localhost}
+      N8N_PROTOCOL: ${N8N_PROTOCOL:-https}
+      WEBHOOK_URL: ${N8N_PUBLIC_URL:-http://localhost:5678/}
+      N8N_SECURE_COOKIE: ${N8N_SECURE_COOKIE:-true}
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      CLAIMGUARD_API: http://app:8000
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n/workflows:/workflows:ro
+      - ./n8n/connect/claimguard-connect.js:/claimguard/claimguard-connect.js:ro
+      - ./n8n/connect/patch-editor.sh:/claimguard/patch-editor.sh:ro
+    ports: ["127.0.0.1:5678:5678"]
+    depends_on: [app]
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    env_file: .env
+    ports: ["80:80", "443:443", "${N8N_PUBLIC_PORT:-8080}:8080"]
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [app, n8n]
+
+  # Optional local LLM for the agent: docker compose --profile llm up -d
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["llm"]
+    restart: unless-stopped
+    volumes: [ollama:/root/.ollama]
+    expose: ["11434"]
+
+volumes:
+  n8n_data:
+  caddy_data:
+  caddy_config:
+  ollama:

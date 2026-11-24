@@ -1,0 +1,57 @@
+{
+  "name": "ClaimGuard · 02 App events (flagged claims pushed by the API)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "claimguard-events",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "b2e1d7e3-0001-4d2b-8b02-appevents001",
+      "name": "ClaimGuard event (webhook)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "webhookId": "claimguard-app-events"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.CLAIMGUARD_API || 'http://app:8000' }}/api/agent/brief",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ claim: $json.body.claim, result: $json.body.result }) }}",
+        "options": { "timeout": 60000 }
+      },
+      "id": "b2e1d7e3-0002-4d2b-8b02-appevents002",
+      "name": "Investigator brief",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ALERT_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: `⚠️ ClaimGuard flagged a claim: ${$json.band.toUpperCase()} (score ${$json.score}) — ${$json.route}\\n${$json.brief}` }) }}",
+        "options": {}
+      },
+      "id": "b2e1d7e3-0003-4d2b-8b02-appevents003",
+      "name": "Alert channel",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 300],
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "ClaimGuard event (webhook)": { "main": [[{ "node": "Investigator brief", "type": "main", "index": 0 }]] },
+    "Investigator brief": { "main": [[{ "node": "Alert channel", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1", "timezone": "Europe/Berlin" },
+  "pinData": {},
+  "tags": []
+}
